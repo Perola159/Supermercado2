@@ -1,6 +1,7 @@
-﻿using Core.Entidades;
+﻿using Core._03_Entidades.DTO;
+using Core.Entidades;
+using Dapper;
 using Dapper.Contrib.Extensions;
-using FrontEnd.Models.DTO.dtos;
 using System.Data.SQLite;
 
 namespace TrabalhoFinal._02_Repository;
@@ -8,9 +9,13 @@ namespace TrabalhoFinal._02_Repository;
 public class CarrinhoRepository
 {
     private readonly string ConnectionString;
+    private readonly ProdutoRepository _repositoryProduto;
+    private readonly UsuarioRepository _repositoryUsuario;
     public CarrinhoRepository(string connectioString)
     {
         ConnectionString = connectioString;
+        _repositoryProduto = new ProdutoRepository(connectioString);
+        _repositoryUsuario = new UsuarioRepository(connectioString);
     }
     public void Adicionar(Carrinho carrinho)
     {
@@ -38,11 +43,25 @@ public class CarrinhoRepository
         using var connection = new SQLiteConnection(ConnectionString);
         return connection.Get<Carrinho>(id);
     }
+    private List<ReadCarrinhoDTO> TransformarListaCarrinhoEmCarrinhoDTO(List<Carrinho> list)
+    {
+        List<ReadCarrinhoDTO> listDTO = new List<ReadCarrinhoDTO>();
+
+        foreach (Carrinho car in list)
+        {
+            ReadCarrinhoDTO readCarrinho = new ReadCarrinhoDTO();
+            readCarrinho.Produto = _repositoryProduto.BuscarPorId(car.ProdutoId);
+            readCarrinho.Usuario = _repositoryUsuario.BuscarPorId(car.UsuarioId);
+            listDTO.Add(readCarrinho);
+        }
+        return listDTO;
+    }
 
     public List<ReadCarrinhoDTO> ListarCarrinhoDoUsuario(int usuarioId)
     {
         using var connection = new SQLiteConnection(ConnectionString);
-        var x = connection.GetAll<Carrinho>().ToList();
-        return new List<ReadCarrinhoDTO>();// ListarCarrinhoDoUsuario(usuarioId);
+        List<Carrinho> list = connection.Query<Carrinho>($"SELECT Id, UsuarioId, ProdutoId FROM Carrinhos WHERE UsuarioId = {usuarioId}").ToList();
+        List<ReadCarrinhoDTO> listDTO = TransformarListaCarrinhoEmCarrinhoDTO(list);
+        return listDTO;
     }
 }

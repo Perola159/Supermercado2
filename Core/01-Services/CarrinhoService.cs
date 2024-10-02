@@ -1,5 +1,5 @@
-﻿using Core.Entidades;
-using FrontEnd.Models.DTO.dtos;
+﻿using Core._03_Entidades.DTO;
+using Core.Entidades;
 using TrabalhoFinal._02_Repository;
 
 namespace TrabalhoFinal._01_Services;
@@ -32,7 +32,7 @@ public class CarrinhoService
 
     public List<ReadCarrinhoDTO> ListarCarrinhoDoUsuario(int usuarioId)
     {
-        return repository.Listar();
+        return repository.ListarCarrinhoDoUsuario(usuarioId);
     }
     public void Editar(Carrinho editPessoa)
     {
